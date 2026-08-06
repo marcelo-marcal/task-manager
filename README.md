@@ -34,20 +34,44 @@ Light / Dark
 ```bash
 C:\programa\task-manager
 │
-├── .git
+├── apps
+│   ├── backend
+│   │   └── .gitkeep
+│   │
+│   └── frontend
+│       ├── public
+│       ├── src
+│       │   ├── app
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css
+│       │   │   ├── layout.tsx
+│       │   │   └── page.tsx
+│       │   │
+│       │   └── features
+│       │       └── auth
+│       │           └── components
+│       │               └── LoginForm.tsx
+│       │
+│       ├── eslint.config.mjs
+│       ├── next-env.d.ts
+│       ├── next.config.ts
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── postcss.config.mjs
+│       ├── tailwind.config.ts
+│       └── tsconfig.json
+│
+├── docs
+│   └── .gitkeep
+│
+├── packages
+│   └── shared
+│       └── .gitkeep
+│
 ├── .editorconfig
 ├── .env.example
 ├── .gitignore
 ├── package.json
-├── README.md
-│
-├── apps
-│   ├── backend
-│   └── frontend
-│
-├── docs
-│
-└── packages
-    └── shared
+└── README.md
 
 ```
