@@ -5,12 +5,15 @@
 // ============================================================
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // ============================================================
 // COMPONENTE
 // ============================================================
 
 export function LoginForm() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -23,12 +26,16 @@ export function LoginForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    // Autenticação real será ligada ao backend futuramente.
+    // --------------------------------------------------------
+    // TEMPORÁRIO
+    // A autenticação real será ligada ao backend posteriormente.
+    // --------------------------------------------------------
+
     setCarregando(true);
 
     window.setTimeout(() => {
-      setCarregando(false);
-    }, 800);
+      router.push("/dashboard");
+    }, 500);
   }
 
   // ----------------------------------------------------------
@@ -136,7 +143,9 @@ export function LoginForm() {
 
           <button
             type="button"
-            onClick={() => setMostrarSenha((estadoAtual) => !estadoAtual)}
+            onClick={() =>
+              setMostrarSenha((estadoAtual) => !estadoAtual)
+            }
             className="
               absolute
               right-4

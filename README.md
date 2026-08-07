@@ -75,3 +75,65 @@ C:\programa\task-manager
 └── README.md
 
 ```
+
+E-mail:
+teste@fx.com.br
+
+Senha:
+123456
+
+
+## Mapeamento consolidado do cartão FX
+
+Fica assim:
+```bash
+CARTÃO FX
+│
+├── Status/lista
+├── Título
+├── Empresa
+├── Competência
+│
+├── Adicionar
+│   ├── Etiqueta
+│   ├── Datas
+│   ├── Checklist
+│   ├── Membro
+│   ├── Anexo
+│   └── Campo personalizado
+│
+├── Membros
+│
+├── Descrição
+│
+├── Checklists
+│   ├── progresso
+│   ├── itens
+│   ├── responsável por item
+│   └── prazo por item
+│
+├── Comentários
+│
+├── Atividade
+│
+├── Anexos
+│
+├── Campos personalizados
+│
+├── Datas
+│   ├── início
+│   ├── prazo interno
+│   ├── prazo legal
+│   ├── hora
+│   ├── recorrência
+│   └── lembrete
+│
+└── Ações
+    ├── mover
+    ├── copiar
+    ├── seguir
+    ├── compartilhar
+    ├── espelhar
+    ├── criar modelo
+    └── arquivar
+```
