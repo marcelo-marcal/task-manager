@@ -23,6 +23,48 @@ type CardModalProps = Readonly<{
   onClose: () => void;
 }>;
 
+type ChecklistItemData = {
+  id: number;
+  texto: string;
+  concluido: boolean;
+};
+
+type ChecklistData = {
+  id: number;
+  titulo: string;
+  itens: ChecklistItemData[];
+};
+
+// ============================================================
+// CHECKLISTS INICIAIS TEMPORÁRIOS
+// ============================================================
+
+function criarChecklistsIniciais(): ChecklistData[] {
+  return [
+    {
+      id: 1,
+      titulo: "Conferência",
+      itens: [
+        {
+          id: 1,
+          texto: "Baixar documentos",
+          concluido: true,
+        },
+        {
+          id: 2,
+          texto: "Importar arquivos",
+          concluido: true,
+        },
+        {
+          id: 3,
+          texto: "Conferir informações",
+          concluido: false,
+        },
+      ],
+    },
+  ];
+}
+
 // ============================================================
 // COMPONENTE
 // ============================================================
@@ -42,7 +84,58 @@ export function CardModal({
   const [tituloEdicao, setTituloEdicao] = useState(titulo);
   const [editandoTitulo, setEditandoTitulo] = useState(false);
 
-  const tituloInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const tituloInputRef =
+    useRef<HTMLTextAreaElement | null>(null);
+
+  // ----------------------------------------------------------
+  // DESCRIÇÃO
+  // ----------------------------------------------------------
+
+  const descricaoInicial =
+    `${empresa}\n\nÁrea reservada para descrição e orientações da tarefa.`;
+
+  const [descricaoAtual, setDescricaoAtual] =
+    useState(descricaoInicial);
+
+  const [descricaoEdicao, setDescricaoEdicao] =
+    useState(descricaoInicial);
+
+  const [editandoDescricao, setEditandoDescricao] =
+    useState(false);
+
+  // ----------------------------------------------------------
+  // CHECKLISTS
+  // ----------------------------------------------------------
+
+  const [checklists, setChecklists] =
+    useState<ChecklistData[]>(criarChecklistsIniciais);
+
+  // ----------------------------------------------------------
+  // CRIAÇÃO DE NOVO CHECKLIST
+  // ----------------------------------------------------------
+
+  const [criandoChecklist, setCriandoChecklist] =
+    useState(false);
+
+  const [tituloNovoChecklist, setTituloNovoChecklist] =
+    useState("");
+
+  const tituloNovoChecklistRef =
+    useRef<HTMLInputElement | null>(null);
+
+  // ----------------------------------------------------------
+  // ADIÇÃO DE ITEM
+  // Guarda o ID do checklist que está recebendo um novo item.
+  // ----------------------------------------------------------
+
+  const [checklistAdicionandoItemId, setChecklistAdicionandoItemId] =
+    useState<number | null>(null);
+
+  const [novoItem, setNovoItem] =
+    useState("");
+
+  const novoItemInputRef =
+    useRef<HTMLInputElement | null>(null);
 
   // ----------------------------------------------------------
   // SINCRONIZAR CARTÃO SELECIONADO
@@ -52,10 +145,31 @@ export function CardModal({
     setTituloAtual(titulo);
     setTituloEdicao(titulo);
     setEditandoTitulo(false);
-  }, [titulo]);
+
+    const novaDescricao =
+      `${empresa}\n\nÁrea reservada para descrição e orientações da tarefa.`;
+
+    setDescricaoAtual(novaDescricao);
+    setDescricaoEdicao(novaDescricao);
+    setEditandoDescricao(false);
+
+    // --------------------------------------------------------
+    // TEMPORÁRIO:
+    // Enquanto não houver persistência, cada cartão recebe
+    // novamente os checklists de demonstração ao ser aberto.
+    // --------------------------------------------------------
+
+    setChecklists(criarChecklistsIniciais());
+
+    setCriandoChecklist(false);
+    setTituloNovoChecklist("");
+
+    setChecklistAdicionandoItemId(null);
+    setNovoItem("");
+  }, [titulo, empresa, checklist]);
 
   // ----------------------------------------------------------
-  // FOCO AUTOMÁTICO AO EDITAR
+  // FOCO AUTOMÁTICO AO EDITAR TÍTULO
   // ----------------------------------------------------------
 
   useEffect(() => {
@@ -66,6 +180,34 @@ export function CardModal({
     tituloInputRef.current?.focus();
     tituloInputRef.current?.select();
   }, [editandoTitulo]);
+
+  // ----------------------------------------------------------
+  // FOCO AUTOMÁTICO AO CRIAR CHECKLIST
+  // ----------------------------------------------------------
+
+  useEffect(() => {
+    if (!criandoChecklist) {
+      return;
+    }
+
+    tituloNovoChecklistRef.current?.focus();
+  }, [criandoChecklist]);
+
+  // ----------------------------------------------------------
+  // FOCO AUTOMÁTICO AO ADICIONAR ITEM
+  // ----------------------------------------------------------
+
+  useEffect(() => {
+    if (checklistAdicionandoItemId === null) {
+      return;
+    }
+
+    novoItemInputRef.current?.focus();
+  }, [checklistAdicionandoItemId]);
+
+  // ==========================================================
+  // TÍTULO
+  // ==========================================================
 
   // ----------------------------------------------------------
   // SALVAR TÍTULO
@@ -86,7 +228,7 @@ export function CardModal({
   }
 
   // ----------------------------------------------------------
-  // CANCELAR EDIÇÃO
+  // CANCELAR EDIÇÃO DO TÍTULO
   // ----------------------------------------------------------
 
   function cancelarEdicaoTitulo() {
@@ -111,6 +253,290 @@ export function CardModal({
       event.preventDefault();
       salvarTitulo();
     }
+  }
+
+  // ==========================================================
+  // DESCRIÇÃO
+  // ==========================================================
+
+  // ----------------------------------------------------------
+  // INICIAR EDIÇÃO
+  // ----------------------------------------------------------
+
+  function iniciarEdicaoDescricao() {
+    setDescricaoEdicao(descricaoAtual);
+    setEditandoDescricao(true);
+  }
+
+  // ----------------------------------------------------------
+  // SALVAR DESCRIÇÃO
+  // ----------------------------------------------------------
+
+  function salvarDescricao() {
+    const descricaoLimpa = descricaoEdicao.trim();
+
+    setDescricaoAtual(descricaoLimpa);
+    setDescricaoEdicao(descricaoLimpa);
+    setEditandoDescricao(false);
+  }
+
+  // ----------------------------------------------------------
+  // CANCELAR EDIÇÃO
+  // ----------------------------------------------------------
+
+  function cancelarEdicaoDescricao() {
+    setDescricaoEdicao(descricaoAtual);
+    setEditandoDescricao(false);
+  }
+
+  // ----------------------------------------------------------
+  // TECLADO DA DESCRIÇÃO
+  // ----------------------------------------------------------
+
+  function handleDescricaoKeyDown(
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelarEdicaoDescricao();
+    }
+  }
+
+  // ==========================================================
+  // CHECKLISTS
+  // ==========================================================
+
+  // ----------------------------------------------------------
+  // ABRIR CRIAÇÃO DE CHECKLIST
+  // ----------------------------------------------------------
+
+  function iniciarNovoChecklist() {
+    setTituloNovoChecklist("");
+    setCriandoChecklist(true);
+
+    setChecklistAdicionandoItemId(null);
+    setNovoItem("");
+  }
+
+  // ----------------------------------------------------------
+  // CANCELAR NOVO CHECKLIST
+  // ----------------------------------------------------------
+
+  function cancelarNovoChecklist() {
+    setTituloNovoChecklist("");
+    setCriandoChecklist(false);
+  }
+
+  // ----------------------------------------------------------
+  // CRIAR NOVO CHECKLIST
+  // ----------------------------------------------------------
+
+  function adicionarNovoChecklist() {
+    const tituloLimpo = tituloNovoChecklist.trim();
+
+    if (tituloLimpo.length === 0) {
+      return;
+    }
+
+    setChecklists((checklistsAtuais) => {
+      const maiorId = checklistsAtuais.reduce(
+        (maiorAtual, checklistAtual) =>
+          checklistAtual.id > maiorAtual
+            ? checklistAtual.id
+            : maiorAtual,
+        0,
+      );
+
+      const novoChecklist: ChecklistData = {
+        id: maiorId + 1,
+        titulo: tituloLimpo,
+        itens: [],
+      };
+
+      return [
+        ...checklistsAtuais,
+        novoChecklist,
+      ];
+    });
+
+    setTituloNovoChecklist("");
+    setCriandoChecklist(false);
+  }
+
+  // ----------------------------------------------------------
+  // TECLADO DO NOVO CHECKLIST
+  // ----------------------------------------------------------
+
+  function handleNovoChecklistKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+  ) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelarNovoChecklist();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      adicionarNovoChecklist();
+    }
+  }
+
+  // ----------------------------------------------------------
+  // EXCLUIR CHECKLIST
+  // ----------------------------------------------------------
+
+  function excluirChecklist(checklistId: number) {
+    setChecklists((checklistsAtuais) =>
+      checklistsAtuais.filter(
+        (checklistAtual) =>
+          checklistAtual.id !== checklistId,
+      ),
+    );
+
+    if (checklistAdicionandoItemId === checklistId) {
+      setChecklistAdicionandoItemId(null);
+      setNovoItem("");
+    }
+  }
+
+  // ----------------------------------------------------------
+  // MARCAR / DESMARCAR ITEM
+  // ----------------------------------------------------------
+
+  function alternarItemChecklist(
+    checklistId: number,
+    itemId: number,
+  ) {
+    setChecklists((checklistsAtuais) =>
+      checklistsAtuais.map((checklistAtual) => {
+        if (checklistAtual.id !== checklistId) {
+          return checklistAtual;
+        }
+
+        return {
+          ...checklistAtual,
+          itens: checklistAtual.itens.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  concluido: !item.concluido,
+                }
+              : item,
+          ),
+        };
+      }),
+    );
+  }
+
+  // ----------------------------------------------------------
+  // ABRIR CAMPO PARA NOVO ITEM
+  // ----------------------------------------------------------
+
+  function iniciarNovoItem(checklistId: number) {
+    setNovoItem("");
+    setChecklistAdicionandoItemId(checklistId);
+
+    setCriandoChecklist(false);
+    setTituloNovoChecklist("");
+  }
+
+  // ----------------------------------------------------------
+  // CANCELAR NOVO ITEM
+  // ----------------------------------------------------------
+
+  function cancelarNovoItem() {
+    setNovoItem("");
+    setChecklistAdicionandoItemId(null);
+  }
+
+  // ----------------------------------------------------------
+  // ADICIONAR NOVO ITEM
+  // ----------------------------------------------------------
+
+  function adicionarNovoItem(checklistId: number) {
+    const textoLimpo = novoItem.trim();
+
+    if (textoLimpo.length === 0) {
+      return;
+    }
+
+    setChecklists((checklistsAtuais) =>
+      checklistsAtuais.map((checklistAtual) => {
+        if (checklistAtual.id !== checklistId) {
+          return checklistAtual;
+        }
+
+        const maiorId = checklistAtual.itens.reduce(
+          (maiorAtual, item) =>
+            item.id > maiorAtual
+              ? item.id
+              : maiorAtual,
+          0,
+        );
+
+        const novoChecklistItem: ChecklistItemData = {
+          id: maiorId + 1,
+          texto: textoLimpo,
+          concluido: false,
+        };
+
+        return {
+          ...checklistAtual,
+          itens: [
+            ...checklistAtual.itens,
+            novoChecklistItem,
+          ],
+        };
+      }),
+    );
+
+    setNovoItem("");
+    setChecklistAdicionandoItemId(null);
+  }
+
+  // ----------------------------------------------------------
+  // TECLADO DO NOVO ITEM
+  // ----------------------------------------------------------
+
+  function handleNovoItemKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+    checklistId: number,
+  ) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelarNovoItem();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      adicionarNovoItem(checklistId);
+    }
+  }
+
+  // ----------------------------------------------------------
+  // EXCLUIR ITEM
+  // ----------------------------------------------------------
+
+  function excluirItemChecklist(
+    checklistId: number,
+    itemId: number,
+  ) {
+    setChecklists((checklistsAtuais) =>
+      checklistsAtuais.map((checklistAtual) => {
+        if (checklistAtual.id !== checklistId) {
+          return checklistAtual;
+        }
+
+        return {
+          ...checklistAtual,
+          itens: checklistAtual.itens.filter(
+            (item) => item.id !== itemId,
+          ),
+        };
+      }),
+    );
   }
 
   // ----------------------------------------------------------
@@ -328,16 +754,121 @@ export function CardModal({
               {empresa}
             </p>
 
-            {/* AÇÕES RÁPIDAS */}
+            {/* =================================================
+                AÇÕES RÁPIDAS
+                ================================================= */}
 
             <div className="mt-5 flex flex-wrap gap-2">
               <QuickAction label="+ Adicionar" />
+
               <QuickAction label="Etiquetas" />
+
               <QuickAction label="Datas" />
-              <QuickAction label="Checklist" />
+
+              <QuickAction
+                label="Checklist"
+                onClick={iniciarNovoChecklist}
+              />
             </div>
 
-            {/* MEMBROS */}
+            {/* =================================================
+                CRIAR NOVO CHECKLIST
+                ================================================= */}
+
+            {criandoChecklist && (
+              <div
+                className="
+                  mt-3
+                  rounded-md
+                  border
+                  border-[var(--border)]
+                  bg-[var(--surface-secondary)]
+                  p-3
+                "
+              >
+                <p
+                  className="
+                    mb-2
+                    text-[12px]
+                    font-semibold
+                    text-[var(--text-primary)]
+                  "
+                >
+                  Adicionar checklist
+                </p>
+
+                <input
+                  ref={tituloNovoChecklistRef}
+                  type="text"
+                  value={tituloNovoChecklist}
+                  onChange={(event) =>
+                    setTituloNovoChecklist(event.target.value)
+                  }
+                  onKeyDown={handleNovoChecklistKeyDown}
+                  placeholder="Título do checklist"
+                  aria-label="Título do novo checklist"
+                  className="
+                    h-9
+                    w-full
+                    rounded-md
+                    border
+                    border-[var(--border)]
+                    bg-[var(--background)]
+                    px-3
+                    text-[12px]
+                    text-[var(--text-primary)]
+                    outline-none
+                    placeholder:text-[var(--text-muted)]
+                    focus:border-[var(--primary)]
+                  "
+                />
+
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={adicionarNovoChecklist}
+                    disabled={
+                      tituloNovoChecklist.trim().length === 0
+                    }
+                    className="
+                      rounded-md
+                      bg-[var(--primary)]
+                      px-3
+                      py-1.5
+                      text-[12px]
+                      font-medium
+                      text-white
+                      transition
+                      hover:bg-[var(--primary-hover)]
+                      disabled:cursor-not-allowed
+                      disabled:opacity-50
+                    "
+                  >
+                    Adicionar
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={cancelarNovoChecklist}
+                    className="
+                      rounded-md
+                      px-3
+                      py-1.5
+                      text-[12px]
+                      text-[var(--text-secondary)]
+                      transition
+                      hover:bg-[var(--surface-hover)]
+                    "
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* =================================================
+                MEMBROS
+                ================================================= */}
 
             <div className="mt-6">
               <p className="text-[11px] font-semibold text-[var(--text-muted)]">
@@ -383,7 +914,9 @@ export function CardModal({
               </div>
             </div>
 
-            {/* DESCRIÇÃO */}
+            {/* =================================================
+                DESCRIÇÃO
+                ================================================= */}
 
             <div className="mt-7">
               <div className="flex items-center justify-between">
@@ -391,105 +924,446 @@ export function CardModal({
                   Descrição
                 </h3>
 
+                {!editandoDescricao && (
+                  <button
+                    type="button"
+                    onClick={iniciarEdicaoDescricao}
+                    className="
+                      rounded-md
+                      border
+                      border-[var(--border)]
+                      px-3
+                      py-1.5
+                      text-xs
+                      text-[var(--text-secondary)]
+                      hover:bg-[var(--surface-hover)]
+                    "
+                  >
+                    Editar
+                  </button>
+                )}
+              </div>
+
+              {editandoDescricao ? (
+                <div className="mt-3">
+                  <textarea
+                    value={descricaoEdicao}
+                    onChange={(event) =>
+                      setDescricaoEdicao(event.target.value)
+                    }
+                    onKeyDown={handleDescricaoKeyDown}
+                    rows={7}
+                    autoFocus
+                    aria-label="Editar descrição do cartão"
+                    className="
+                      w-full
+                      resize-y
+                      rounded-md
+                      border
+                      border-[var(--primary)]
+                      bg-[var(--surface-secondary)]
+                      p-3
+                      text-[13px]
+                      leading-6
+                      text-[var(--text-primary)]
+                      outline-none
+                      ring-2
+                      ring-[var(--primary)]/20
+                    "
+                  />
+
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={salvarDescricao}
+                      className="
+                        rounded-md
+                        bg-[var(--primary)]
+                        px-3
+                        py-1.5
+                        text-[12px]
+                        font-medium
+                        text-white
+                        transition
+                        hover:bg-[var(--primary-hover)]
+                      "
+                    >
+                      Salvar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={cancelarEdicaoDescricao}
+                      className="
+                        rounded-md
+                        px-3
+                        py-1.5
+                        text-[12px]
+                        text-[var(--text-secondary)]
+                        transition
+                        hover:bg-[var(--surface-hover)]
+                      "
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <button
                   type="button"
+                  onClick={iniciarEdicaoDescricao}
                   className="
+                    mt-3
+                    min-h-[90px]
+                    w-full
+                    whitespace-pre-wrap
                     rounded-md
-                    border
-                    border-[var(--border)]
-                    px-3
-                    py-1.5
-                    text-xs
+                    bg-[var(--surface-secondary)]
+                    p-3
+                    text-left
+                    text-[13px]
+                    leading-6
                     text-[var(--text-secondary)]
+                    transition
                     hover:bg-[var(--surface-hover)]
                   "
                 >
-                  Editar
+                  {descricaoAtual.length > 0
+                    ? descricaoAtual
+                    : "Adicionar uma descrição..."}
                 </button>
-              </div>
-
-              <div
-                className="
-                  mt-3
-                  min-h-[90px]
-                  rounded-md
-                  bg-[var(--surface-secondary)]
-                  p-3
-                  text-[13px]
-                  leading-6
-                  text-[var(--text-secondary)]
-                "
-              >
-                <p>{empresa}</p>
-
-                <p className="mt-2">
-                  Área reservada para descrição e orientações da tarefa.
-                </p>
-              </div>
+              )}
             </div>
 
-            {/* CHECKLIST VISUAL TEMPORÁRIO */}
+            {/* =================================================
+                CHECKLISTS
+                ================================================= */}
 
-            <div className="mt-7">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[14px] font-semibold">
-                  Checklist
-                </h3>
+            <div className="mt-7 space-y-8">
+              {checklists.map((checklistAtual) => {
+                const totalItens =
+                  checklistAtual.itens.length;
 
-                <span className="text-[11px] text-[var(--text-muted)]">
-                  {checklist}
-                </span>
-              </div>
+                const totalConcluidos =
+                  checklistAtual.itens.filter(
+                    (item) => item.concluido,
+                  ).length;
 
-              <div
-                className="
-                  mt-3
-                  h-2
-                  overflow-hidden
-                  rounded-full
-                  bg-[var(--surface-secondary)]
-                "
-              >
+                const percentual =
+                  totalItens === 0
+                    ? 0
+                    : Math.round(
+                        (totalConcluidos / totalItens) * 100,
+                      );
+
+                return (
+                  <section
+                    key={checklistAtual.id}
+                    className="
+                      border-t
+                      border-[var(--border)]
+                      pt-5
+                      first:border-t-0
+                      first:pt-0
+                    "
+                  >
+                    {/* =========================================
+                        CABEÇALHO
+                        ========================================= */}
+
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3
+                          className="
+                            truncate
+                            text-[14px]
+                            font-semibold
+                          "
+                        >
+                          {checklistAtual.titulo}
+                        </h3>
+
+                        <p
+                          className="
+                            mt-0.5
+                            text-[10px]
+                            text-[var(--text-muted)]
+                          "
+                        >
+                          {totalConcluidos}/{totalItens} concluídos
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          excluirChecklist(checklistAtual.id)
+                        }
+                        className="
+                          shrink-0
+                          rounded-md
+                          px-2.5
+                          py-1.5
+                          text-[11px]
+                          text-[var(--text-muted)]
+                          transition
+                          hover:bg-red-500/10
+                          hover:text-red-400
+                        "
+                      >
+                        Excluir
+                      </button>
+                    </div>
+
+                    {/* =========================================
+                        PROGRESSO
+                        ========================================= */}
+
+                    <div className="mt-3 flex items-center gap-3">
+                      <span
+                        className="
+                          w-8
+                          shrink-0
+                          text-[11px]
+                          text-[var(--text-muted)]
+                        "
+                      >
+                        {percentual}%
+                      </span>
+
+                      <div
+                        className="
+                          h-2
+                          flex-1
+                          overflow-hidden
+                          rounded-full
+                          bg-[var(--surface-secondary)]
+                        "
+                      >
+                        <div
+                          className="
+                            h-full
+                            rounded-full
+                            bg-green-500
+                            transition-[width]
+                            duration-200
+                          "
+                          style={{
+                            width: `${percentual}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* =========================================
+                        ITENS
+                        ========================================= */}
+
+                    <div className="mt-4 space-y-1">
+                      {checklistAtual.itens.map((item) => (
+                        <ChecklistItem
+                          key={item.id}
+                          item={item}
+                          onToggle={() =>
+                            alternarItemChecklist(
+                              checklistAtual.id,
+                              item.id,
+                            )
+                          }
+                          onDelete={() =>
+                            excluirItemChecklist(
+                              checklistAtual.id,
+                              item.id,
+                            )
+                          }
+                        />
+                      ))}
+                    </div>
+
+                    {/* =========================================
+                        CHECKLIST VAZIO
+                        ========================================= */}
+
+                    {totalItens === 0 && (
+                      <div
+                        className="
+                          mt-3
+                          rounded-md
+                          border
+                          border-dashed
+                          border-[var(--border)]
+                          px-3
+                          py-4
+                          text-center
+                          text-[12px]
+                          text-[var(--text-muted)]
+                        "
+                      >
+                        Nenhum item adicionado.
+                      </div>
+                    )}
+
+                    {/* =========================================
+                        ADICIONAR ITEM
+                        ========================================= */}
+
+                    {checklistAdicionandoItemId ===
+                    checklistAtual.id ? (
+                      <div
+                        className="
+                          mt-3
+                          rounded-md
+                          border
+                          border-[var(--border)]
+                          bg-[var(--surface-secondary)]
+                          p-3
+                        "
+                      >
+                        <input
+                          ref={novoItemInputRef}
+                          type="text"
+                          value={novoItem}
+                          onChange={(event) =>
+                            setNovoItem(event.target.value)
+                          }
+                          onKeyDown={(event) =>
+                            handleNovoItemKeyDown(
+                              event,
+                              checklistAtual.id,
+                            )
+                          }
+                          placeholder="Adicionar um item..."
+                          aria-label={`Novo item de ${checklistAtual.titulo}`}
+                          className="
+                            h-9
+                            w-full
+                            rounded-md
+                            border
+                            border-[var(--border)]
+                            bg-[var(--background)]
+                            px-3
+                            text-[12px]
+                            text-[var(--text-primary)]
+                            outline-none
+                            placeholder:text-[var(--text-muted)]
+                            focus:border-[var(--primary)]
+                          "
+                        />
+
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              adicionarNovoItem(
+                                checklistAtual.id,
+                              )
+                            }
+                            disabled={
+                              novoItem.trim().length === 0
+                            }
+                            className="
+                              rounded-md
+                              bg-[var(--primary)]
+                              px-3
+                              py-1.5
+                              text-[12px]
+                              font-medium
+                              text-white
+                              transition
+                              hover:bg-[var(--primary-hover)]
+                              disabled:cursor-not-allowed
+                              disabled:opacity-50
+                            "
+                          >
+                            Adicionar
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={cancelarNovoItem}
+                            className="
+                              rounded-md
+                              px-3
+                              py-1.5
+                              text-[12px]
+                              text-[var(--text-secondary)]
+                              transition
+                              hover:bg-[var(--surface-hover)]
+                            "
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          iniciarNovoItem(checklistAtual.id)
+                        }
+                        className="
+                          mt-3
+                          rounded-md
+                          px-3
+                          py-2
+                          text-[12px]
+                          text-[var(--text-secondary)]
+                          transition
+                          hover:bg-[var(--surface-hover)]
+                        "
+                      >
+                        + Adicionar um item
+                      </button>
+                    )}
+                  </section>
+                );
+              })}
+
+              {/* ===============================================
+                  SEM CHECKLISTS
+                  =============================================== */}
+
+              {checklists.length === 0 && (
                 <div
                   className="
-                    h-full
-                    w-2/3
-                    rounded-full
-                    bg-green-500
+                    rounded-md
+                    border
+                    border-dashed
+                    border-[var(--border)]
+                    px-4
+                    py-6
+                    text-center
                   "
-                />
-              </div>
+                >
+                  <p
+                    className="
+                      text-[12px]
+                      text-[var(--text-muted)]
+                    "
+                  >
+                    Este cartão ainda não possui checklists.
+                  </p>
 
-              <div className="mt-4 space-y-2">
-                <ChecklistItem
-                  label="Baixar documentos"
-                  concluido
-                />
-
-                <ChecklistItem
-                  label="Importar arquivos"
-                  concluido
-                />
-
-                <ChecklistItem
-                  label="Conferir informações"
-                />
-              </div>
-
-              <button
-                type="button"
-                className="
-                  mt-3
-                  rounded-md
-                  px-3
-                  py-2
-                  text-[12px]
-                  text-[var(--text-secondary)]
-                  hover:bg-[var(--surface-hover)]
-                "
-              >
-                + Adicionar um item
-              </button>
+                  <button
+                    type="button"
+                    onClick={iniciarNovoChecklist}
+                    className="
+                      mt-3
+                      rounded-md
+                      bg-[var(--surface-secondary)]
+                      px-3
+                      py-2
+                      text-[12px]
+                      text-[var(--text-secondary)]
+                      transition
+                      hover:bg-[var(--surface-hover)]
+                      hover:text-[var(--text-primary)]
+                    "
+                  >
+                    + Adicionar checklist
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -595,12 +1469,17 @@ export function CardModal({
 
 type QuickActionProps = Readonly<{
   label: string;
+  onClick?: () => void;
 }>;
 
-function QuickAction({ label }: QuickActionProps) {
+function QuickAction({
+  label,
+  onClick,
+}: QuickActionProps) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="
         rounded-md
         border
@@ -625,45 +1504,99 @@ function QuickAction({ label }: QuickActionProps) {
 // ============================================================
 
 type ChecklistItemProps = Readonly<{
-  label: string;
-  concluido?: boolean;
+  item: ChecklistItemData;
+  onToggle: () => void;
+  onDelete: () => void;
 }>;
 
 function ChecklistItem({
-  label,
-  concluido = false,
+  item,
+  onToggle,
+  onDelete,
 }: ChecklistItemProps) {
   return (
-    <label
+    <div
       className="
+        group
         flex
+        min-h-9
         items-center
         gap-2
         rounded-md
         px-2
         py-1.5
-        text-[12px]
-        text-[var(--text-secondary)]
+        transition
         hover:bg-[var(--surface-hover)]
       "
     >
+      {/* CHECKBOX */}
+
       <input
         type="checkbox"
-        checked={concluido}
-        readOnly
-        className="accent-green-500"
+        checked={item.concluido}
+        onChange={onToggle}
+        aria-label={`Marcar ${item.texto}`}
+        className="
+          h-4
+          w-4
+          shrink-0
+          cursor-pointer
+          accent-green-500
+        "
       />
 
-      <span
-        className={
-          concluido
-            ? "line-through opacity-70"
-            : ""
-        }
+      {/* TEXTO */}
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className="
+          min-w-0
+          flex-1
+          text-left
+          text-[12px]
+          text-[var(--text-secondary)]
+        "
       >
-        {label}
-      </span>
-    </label>
+        <span
+          className={
+            item.concluido
+              ? "line-through opacity-70"
+              : ""
+          }
+        >
+          {item.texto}
+        </span>
+      </button>
+
+      {/* EXCLUIR */}
+
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label={`Excluir ${item.texto}`}
+        title="Excluir item"
+        className="
+          flex
+          h-7
+          w-7
+          shrink-0
+          items-center
+          justify-center
+          rounded-md
+          text-[14px]
+          text-[var(--text-muted)]
+          opacity-0
+          transition
+          hover:bg-red-500/10
+          hover:text-red-400
+          group-hover:opacity-100
+          focus:opacity-100
+        "
+      >
+        ×
+      </button>
+    </div>
   );
 }
 
