@@ -20,34 +20,48 @@ git push origin develop
 
 ## Monorepo
 
-## Rode na Rais da pasta guardiana-web
+## Rode na Rais da pasta
+
+Terminal de Teste:
+```bash
+cd "C:\xampp\htdocs\task-manager"
+```
+Limpesa:
+[Console]::Clear()
+
+
+`npm install`
+
+`npm run dev:backend`
+
+`npm run dev:frontend`
+
 npm install
 
-npm run dev:backend
-
-npm run dev:frontend
 
 ## Estrutura de Pasta e Arquivos (Profissional e Escalável)
 
 Light / Dark
 
 ```bash
-C:\programa\task-manager
+C:\xampp\htdocs\task-manager
 │
 ├── .git
+├── apps
+│   ├── backend
+│   │   └── .gitkeep
+│   └── frontend
+│       ├── src
+│       ├── package.json
+│       ├── package-lock.json
+│       ├── tsconfig.json
+│       └── ...
+│
+├── docs
+├── packages
 ├── .editorconfig
 ├── .env.example
 ├── .gitignore
 ├── package.json
-├── README.md
-│
-├── apps
-│   ├── backend
-│   └── frontend
-│
-├── docs
-│
-└── packages
-    └── shared
-
+└── README.md
 ```
