@@ -16,9 +16,12 @@ import { CommentComposer } from "./activity/CommentComposer";
 export function CardActivityPanel() {
   const {
     atividades,
+
     novoComentario,
     setNovoComentario,
+
     adicionarComentario,
+    excluirComentario,
   } = useCardActivity();
 
   return (
@@ -80,6 +83,14 @@ export function CardActivityPanel() {
             <ActivityItem
               key={atividade.id}
               atividade={atividade}
+              onDeleteComment={
+                atividade.tipo === "comment"
+                  ? () =>
+                      excluirComentario(
+                        atividade.id,
+                      )
+                  : undefined
+              }
             />
           ),
         )}

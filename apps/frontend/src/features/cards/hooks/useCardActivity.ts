@@ -89,6 +89,24 @@ export function useCardActivity() {
     setNovoComentario("");
   }
 
+  // ----------------------------------------------------------
+  // EXCLUIR COMENTÁRIO
+  //
+  // Eventos do sistema nunca são removidos por esta função.
+  // ----------------------------------------------------------
+
+  function excluirComentario(
+    atividadeId: number,
+  ) {
+    setAtividades((atividadesAtuais) =>
+      atividadesAtuais.filter(
+        (atividadeAtual) =>
+          atividadeAtual.id !== atividadeId ||
+          atividadeAtual.tipo === "system",
+      ),
+    );
+  }
+
   return {
     atividades,
 
@@ -96,5 +114,6 @@ export function useCardActivity() {
     setNovoComentario,
 
     adicionarComentario,
+    excluirComentario,
   };
 }
