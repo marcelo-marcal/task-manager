@@ -24,7 +24,11 @@ git push origin develop
 
 Terminal de Teste:
 ```bash
-cd "C:\xampp\htdocs\task-manager"
+Casa:
+C:\xampp\htdocs\task-manager
+
+Trabalho:
+C:\programa\task-manager
 ```
 Limpesa:
 [Console]::Clear()
