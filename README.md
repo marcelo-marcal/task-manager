@@ -20,120 +20,48 @@ git push origin develop
 
 ## Monorepo
 
-## Rode na Rais da pasta guardiana-web
+## Rode na Rais da pasta
+
+Terminal de Teste:
+```bash
+cd "C:\xampp\htdocs\task-manager"
+```
+Limpesa:
+[Console]::Clear()
+
+
+`npm install`
+
+`npm run dev:backend`
+
+`npm run dev:frontend`
+
 npm install
 
-npm run dev:backend
-
-npm run dev:frontend
 
 ## Estrutura de Pasta e Arquivos (Profissional e Escalável)
 
 Light / Dark
 
 ```bash
-C:\programa\task-manager
+C:\xampp\htdocs\task-manager
 │
+├── .git
 ├── apps
 │   ├── backend
 │   │   └── .gitkeep
-│   │
 │   └── frontend
-│       ├── public
 │       ├── src
-│       │   ├── app
-│       │   │   ├── favicon.ico
-│       │   │   ├── globals.css
-│       │   │   ├── layout.tsx
-│       │   │   └── page.tsx
-│       │   │
-│       │   └── features
-│       │       └── auth
-│       │           └── components
-│       │               └── LoginForm.tsx
-│       │
-│       ├── eslint.config.mjs
-│       ├── next-env.d.ts
-│       ├── next.config.ts
-│       ├── package-lock.json
 │       ├── package.json
-│       ├── postcss.config.mjs
-│       ├── tailwind.config.ts
-│       └── tsconfig.json
+│       ├── package-lock.json
+│       ├── tsconfig.json
+│       └── ...
 │
 ├── docs
-│   └── .gitkeep
-│
 ├── packages
-│   └── shared
-│       └── .gitkeep
-│
 ├── .editorconfig
 ├── .env.example
 ├── .gitignore
 ├── package.json
 └── README.md
-
-```
-
-E-mail:
-teste@fx.com.br
-
-Senha:
-123456
-
-
-## Mapeamento consolidado do cartão FX
-
-Fica assim:
-```bash
-CARTÃO FX
-│
-├── Status/lista
-├── Título
-├── Empresa
-├── Competência
-│
-├── Adicionar
-│   ├── Etiqueta
-│   ├── Datas
-│   ├── Checklist
-│   ├── Membro
-│   ├── Anexo
-│   └── Campo personalizado
-│
-├── Membros
-│
-├── Descrição
-│
-├── Checklists
-│   ├── progresso
-│   ├── itens
-│   ├── responsável por item
-│   └── prazo por item
-│
-├── Comentários
-│
-├── Atividade
-│
-├── Anexos
-│
-├── Campos personalizados
-│
-├── Datas
-│   ├── início
-│   ├── prazo interno
-│   ├── prazo legal
-│   ├── hora
-│   ├── recorrência
-│   └── lembrete
-│
-└── Ações
-    ├── mover
-    ├── copiar
-    ├── seguir
-    ├── compartilhar
-    ├── espelhar
-    ├── criar modelo
-    └── arquivar
 ```
