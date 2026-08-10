@@ -23,12 +23,14 @@ git push origin develop
 ## Rode na Rais da pasta
 
 Terminal de Teste:
-```bash
 Casa:
-C:\xampp\htdocs\task-manager
+```bash
+cd "C:\xampp\htdocs\task-manager"
+```
 
 Trabalho:
-C:\programa\task-manager
+```bash
+cd "C:\programa\task-manager"
 ```
 Limpesa:
 [Console]::Clear()
