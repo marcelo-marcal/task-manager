@@ -8,6 +8,13 @@
 // após compararmos cada comportamento com o Trello.
 // ============================================================
 
+import { HelpCircleIcon } from "@/components/icons/HelpCircleIcon";
+import { PaperclipIcon } from "@/components/icons/PaperclipIcon";
+
+// ============================================================
+// COMPONENTE
+// ============================================================
+
 export function CommentEditorToolbar() {
   return (
     <div
@@ -53,15 +60,21 @@ export function CommentEditorToolbar() {
 
       <div className="flex-1" />
 
-      <ToolbarButton label="⌕" title="Anexar" />
+      <ToolbarIconButton
+        title="Anexar"
+        icon={<PaperclipIcon />}
+      />
 
-      <ToolbarButton label="?" title="Ajuda" />
+      <ToolbarIconButton
+        title="Ajuda"
+        icon={<HelpCircleIcon />}
+      />
     </div>
   );
 }
 
 // ============================================================
-// BOTÃO DA TOOLBAR
+// BOTÃO DE TEXTO DA TOOLBAR
 // ============================================================
 
 type ToolbarButtonProps = Readonly<{
@@ -100,6 +113,46 @@ function ToolbarButton({
       `}
     >
       {label}
+    </button>
+  );
+}
+
+// ============================================================
+// BOTÃO COM ÍCONE DA TOOLBAR
+//
+// Separado do botão de texto porque outros controles poderão
+// usar SVGs reutilizáveis posteriormente.
+// ============================================================
+
+type ToolbarIconButtonProps = Readonly<{
+  title: string;
+  icon: React.ReactNode;
+}>;
+
+function ToolbarIconButton({
+  title,
+  icon,
+}: ToolbarIconButtonProps) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      className="
+        flex
+        h-7
+        min-w-7
+        items-center
+        justify-center
+        rounded
+        px-1.5
+        text-[var(--text-secondary)]
+        transition
+        hover:bg-[var(--surface-hover)]
+        hover:text-[var(--text-primary)]
+      "
+    >
+      {icon}
     </button>
   );
 }
