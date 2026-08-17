@@ -3,19 +3,67 @@
 // ============================================================
 // FX - BARRA DO EDITOR DE COMENTÁRIOS
 //
-// Nesta etapa os controles são apenas visuais.
-// As funções reais serão implementadas individualmente depois,
-// após compararmos cada comportamento com o Trello.
+// A barra utiliza componentes genéricos do editor sempre que
+// o comportamento puder ser reutilizado em outras áreas.
+//
+// A toolbar NÃO altera diretamente o conteúdo do editor.
+//
+// Ela apenas comunica as ações executadas pelo usuário para
+// o componente responsável pelo conteúdo.
+//
+// A implementação das funções está sendo feita gradualmente,
+// seguindo a engenharia reversa do Trello.
 // ============================================================
 
+import { RichTextMoreFormattingControl } from "@/components/editor/toolbar/RichTextMoreFormattingControl";
+import { BoldIcon } from "@/components/icons/BoldIcon";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon";
 import { HelpCircleIcon } from "@/components/icons/HelpCircleIcon";
+import { ItalicIcon } from "@/components/icons/ItalicIcon";
+import { ListIcon } from "@/components/icons/ListIcon";
 import { PaperclipIcon } from "@/components/icons/PaperclipIcon";
+import { PlusIcon } from "@/components/icons/PlusIcon";
+import { TextStyleIcon } from "@/components/icons/TextStyleIcon";
+
+// ============================================================
+// TIPOS
+// ============================================================
+
+type CommentEditorToolbarProps = Readonly<{
+  onStrike: () => void;
+  strikeDisabled?: boolean;
+}>;
 
 // ============================================================
 // COMPONENTE
 // ============================================================
 
-export function CommentEditorToolbar() {
+export function CommentEditorToolbar({
+  onStrike,
+  strikeDisabled = false,
+}: CommentEditorToolbarProps) {
+  // ----------------------------------------------------------
+  // CÓDIGO
+  //
+  // Ainda não conectado nesta etapa.
+  // Será implementado somente depois que Tachado estiver
+  // completamente funcional e validado.
+  // ----------------------------------------------------------
+
+  function aplicarCodigo() {
+    return;
+  }
+
+  // ----------------------------------------------------------
+  // LIMPAR FORMATAÇÃO
+  //
+  // Ainda não conectado nesta etapa.
+  // ----------------------------------------------------------
+
+  function limparFormatacao() {
+    return;
+  }
+
   return (
     <div
       className="
@@ -28,13 +76,63 @@ export function CommentEditorToolbar() {
         px-2
       "
     >
-      <ToolbarButton label="Tt⌄" title="Estilo de texto" />
+      {/* ====================================================
+          ESTILO DE TEXTO
+      ==================================================== */}
 
-      <ToolbarButton label="B" title="Negrito" destaque />
+      <ToolbarIconButton
+        title="Estilo de texto"
+        icon={
+          <span className="flex items-center gap-0.5">
+            <TextStyleIcon />
+            <ChevronDownIcon />
+          </span>
+        }
+      />
 
-      <ToolbarButton label="I" title="Itálico" destaque />
+      {/* ====================================================
+          NEGRITO
+      ==================================================== */}
 
-      <ToolbarButton label="•••" title="Mais formatações" />
+      <ToolbarIconButton
+        title="Negrito"
+        icon={<BoldIcon />}
+      />
+
+      {/* ====================================================
+          ITÁLICO
+      ==================================================== */}
+
+      <ToolbarIconButton
+        title="Itálico"
+        icon={<ItalicIcon />}
+      />
+
+      {/* ====================================================
+          MAIS FORMATAÇÕES
+
+          Nesta etapa:
+          - Tachado já comunica a ação ao editor;
+          - Código ainda será implementado;
+          - Limpar formatação ainda será implementado.
+
+          Comportamentos do controle já implementados:
+          - abre ao clicar;
+          - fecha clicando novamente;
+          - fecha clicando fora;
+          - não captura Escape.
+      ==================================================== */}
+
+      <RichTextMoreFormattingControl
+        strikeDisabled={strikeDisabled}
+        codeActive={false}
+        clearFormattingDisabled
+        onStrike={onStrike}
+        onCode={aplicarCodigo}
+        onClearFormatting={
+          limparFormatacao
+        }
+      />
 
       <div
         className="
@@ -45,7 +143,19 @@ export function CommentEditorToolbar() {
         "
       />
 
-      <ToolbarButton label="☷⌄" title="Listas" />
+      {/* ====================================================
+          LISTAS
+      ==================================================== */}
+
+      <ToolbarIconButton
+        title="Listas"
+        icon={
+          <span className="flex items-center gap-0.5">
+            <ListIcon />
+            <ChevronDownIcon />
+          </span>
+        }
+      />
 
       <div
         className="
@@ -56,14 +166,34 @@ export function CommentEditorToolbar() {
         "
       />
 
-      <ToolbarButton label="+⌄" title="Inserir" />
+      {/* ====================================================
+          INSERIR
+      ==================================================== */}
+
+      <ToolbarIconButton
+        title="Inserir"
+        icon={
+          <span className="flex items-center gap-0.5">
+            <PlusIcon />
+            <ChevronDownIcon />
+          </span>
+        }
+      />
 
       <div className="flex-1" />
+
+      {/* ====================================================
+          ANEXAR
+      ==================================================== */}
 
       <ToolbarIconButton
         title="Anexar"
         icon={<PaperclipIcon />}
       />
+
+      {/* ====================================================
+          AJUDA
+      ==================================================== */}
 
       <ToolbarIconButton
         title="Ajuda"
@@ -74,54 +204,14 @@ export function CommentEditorToolbar() {
 }
 
 // ============================================================
-// BOTÃO DE TEXTO DA TOOLBAR
-// ============================================================
-
-type ToolbarButtonProps = Readonly<{
-  label: string;
-  title: string;
-  destaque?: boolean;
-}>;
-
-function ToolbarButton({
-  label,
-  title,
-  destaque = false,
-}: ToolbarButtonProps) {
-  return (
-    <button
-      type="button"
-      title={title}
-      aria-label={title}
-      className={`
-        flex
-        h-7
-        min-w-7
-        items-center
-        justify-center
-        rounded
-        px-1.5
-        text-[13px]
-        transition
-        hover:bg-[var(--surface-hover)]
-
-        ${
-          destaque
-            ? "font-semibold text-[var(--text-primary)]"
-            : "text-[var(--text-secondary)]"
-        }
-      `}
-    >
-      {label}
-    </button>
-  );
-}
-
-// ============================================================
 // BOTÃO COM ÍCONE DA TOOLBAR
 //
-// Separado do botão de texto porque outros controles poderão
-// usar SVGs reutilizáveis posteriormente.
+// Componente local utilizado pelos controles que ainda não
+// possuem um comportamento genérico próprio.
+//
+// Conforme avançarmos na engenharia reversa, outros controles
+// poderão ser promovidos para componentes reutilizáveis do
+// editor.
 // ============================================================
 
 type ToolbarIconButtonProps = Readonly<{

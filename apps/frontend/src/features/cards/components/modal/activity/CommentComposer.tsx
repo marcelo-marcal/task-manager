@@ -2,12 +2,45 @@
 
 // ============================================================
 // FX - CAMPO PARA NOVO COMENTÁRIO
+//
+// Coordena:
+// - conteúdo;
+// - seleção;
+// - estado do cursor;
+// - ações vindas da toolbar.
+//
+// A implementação especializada do editor permanece em:
+//
+// src/components/editor
 // ============================================================
 
 import {
   useRef,
   useState,
 } from "react";
+
+import {
+  RichTextSurface,
+} from "@/components/editor/RichTextSurface";
+
+import type {
+  RichTextSurfaceHandle,
+} from "@/components/editor/RichTextSurface";
+
+import {
+  useRichTextSelection,
+} from "@/components/editor/hooks/useRichTextSelection";
+
+import type {
+  RichTextContent,
+  RichTextSelectionState,
+} from "@/components/editor/types/rich-text.types";
+
+import {
+  aplicarMarcaNaSelecao,
+  criarRichTextContent,
+  obterTextoPlano,
+} from "@/components/editor/utils/rich-text-content.utils";
 
 import { CommentEditorToolbar } from "./CommentEditorToolbar";
 
@@ -17,7 +50,11 @@ import { CommentEditorToolbar } from "./CommentEditorToolbar";
 
 type CommentComposerProps = Readonly<{
   comentario: string;
-  onComentarioChange: (comentario: string) => void;
+
+  onComentarioChange: (
+    comentario: string,
+  ) => void;
+
   onSubmit: () => void;
 }>;
 
@@ -36,22 +73,162 @@ export function CommentComposer({
   const [seguir, setSeguir] =
     useState(true);
 
-  const textareaRef =
-    useRef<HTMLTextAreaElement | null>(null);
+  // ----------------------------------------------------------
+  // CONTEÚDO RICO
+  // ----------------------------------------------------------
+
+  const [conteudo, setConteudo] =
+    useState<RichTextContent>(() =>
+      criarRichTextContent(
+        comentario,
+      ),
+    );
+
+  // ----------------------------------------------------------
+  // REFERÊNCIA PÚBLICA DA SUPERFÍCIE
+  // ----------------------------------------------------------
+
+  const editorRef =
+    useRef<RichTextSurfaceHandle | null>(
+      null,
+    );
+
+  // ----------------------------------------------------------
+  // SELEÇÃO E CURSOR
+  // ----------------------------------------------------------
+
+  const {
+    selecao,
+    possuiSelecao,
+    atualizarEstadoSelecao,
+    limparSelecao,
+    possuiMarcaAtiva,
+  } = useRichTextSelection();
+
+  // ----------------------------------------------------------
+  // TACHADO NO PONTO ATUAL DO CURSOR
+  // ----------------------------------------------------------
+
+  const strikeAtivoNoCursor =
+    possuiMarcaAtiva(
+      "strike",
+    );
+
+  // ----------------------------------------------------------
+  // DISPONIBILIDADE DO TACHADO
+  //
+  // Habilitado quando:
+  //
+  // - existe seleção; ou
+  // - o cursor está dentro de texto já tachado.
+  // ----------------------------------------------------------
+
+  const podeUsarTachado =
+    possuiSelecao ||
+    strikeAtivoNoCursor;
+
+  // ----------------------------------------------------------
+  // TEXTO PLANO
+  // ----------------------------------------------------------
+
+  const textoPlano =
+    obterTextoPlano(
+      conteudo,
+    );
 
   const podeEnviar =
-    comentario.trim().length > 0;
+    textoPlano.trim().length > 0;
 
   // ----------------------------------------------------------
   // ABRIR EDITOR
   // ----------------------------------------------------------
 
   function abrirEditor() {
-    setEditorAberto(true);
+    setConteudo(
+      criarRichTextContent(
+        comentario,
+      ),
+    );
+
+    limparSelecao();
+
+    setEditorAberto(
+      true,
+    );
 
     window.setTimeout(() => {
-      textareaRef.current?.focus();
+      editorRef.current?.focus();
     }, 0);
+  }
+
+  // ----------------------------------------------------------
+  // ALTERAR CONTEÚDO
+  // ----------------------------------------------------------
+
+  function alterarConteudo(
+    novoConteudo: RichTextContent,
+  ) {
+    setConteudo(
+      novoConteudo,
+    );
+
+    onComentarioChange(
+      obterTextoPlano(
+        novoConteudo,
+      ),
+    );
+  }
+
+  // ----------------------------------------------------------
+  // ATUALIZAR SELEÇÃO / CURSOR
+  // ----------------------------------------------------------
+
+  function alterarEstadoSelecao(
+    state: RichTextSelectionState,
+  ) {
+    atualizarEstadoSelecao(
+      state.selecao,
+      state.cursor,
+    );
+  }
+
+  // ----------------------------------------------------------
+  // APLICAR / ALTERNAR TACHADO
+  //
+  // CASO 1 - COM SELEÇÃO
+  //
+  // Modifica somente o trecho selecionado.
+  //
+  // CASO 2 - SEM SELEÇÃO, CURSOR DENTRO DE TACHADO
+  //
+  // Não modifica o texto já existente.
+  // Apenas desliga "strike" para a próxima digitação naquele
+  // ponto do cursor.
+  // ----------------------------------------------------------
+
+  function aplicarTachado() {
+    if (!possuiSelecao) {
+      if (!strikeAtivoNoCursor) {
+        return;
+      }
+
+      editorRef.current?.toggleMarkAtCursor(
+        "strike",
+      );
+
+      return;
+    }
+
+    const novoConteudo =
+      aplicarMarcaNaSelecao(
+        conteudo,
+        selecao,
+        "strike",
+      );
+
+    alterarConteudo(
+      novoConteudo,
+    );
   }
 
   // ----------------------------------------------------------
@@ -64,18 +241,34 @@ export function CommentComposer({
     }
 
     onSubmit();
-    setEditorAberto(false);
+
+    setConteudo(
+      criarRichTextContent(""),
+    );
+
+    limparSelecao();
+
+    setEditorAberto(
+      false,
+    );
   }
 
   // ----------------------------------------------------------
   // CANCELAR COMENTÁRIO
-  //
-  // Descarta qualquer texto digitado e fecha o editor.
   // ----------------------------------------------------------
 
   function cancelarComentario() {
     onComentarioChange("");
-    setEditorAberto(false);
+
+    setConteudo(
+      criarRichTextContent(""),
+    );
+
+    limparSelecao();
+
+    setEditorAberto(
+      false,
+    );
   }
 
   // ==========================================================
@@ -116,51 +309,33 @@ export function CommentComposer({
 
   return (
     <div className="mt-3">
-      {/* ======================================================
-          EDITOR
-      ====================================================== */}
-
       <div
         className="
-          overflow-hidden
+          relative
+          overflow-visible
           rounded-md
           border
           border-[var(--primary)]
           bg-[var(--surface-secondary)]
         "
       >
-        <CommentEditorToolbar />
-
-        <textarea
-          ref={textareaRef}
-          value={comentario}
-          onChange={(event) =>
-            onComentarioChange(
-              event.target.value,
-            )
+        <CommentEditorToolbar
+          onStrike={aplicarTachado}
+          strikeDisabled={
+            !podeUsarTachado
           }
+        />
+
+        <RichTextSurface
+          ref={editorRef}
+          content={conteudo}
           placeholder="Escrever um comentário..."
-          aria-label="Escrever comentário"
-          rows={4}
-          className="
-            min-h-[92px]
-            w-full
-            resize-y
-            bg-transparent
-            px-3
-            py-3
-            text-[13px]
-            leading-5
-            text-[var(--text-primary)]
-            outline-none
-            placeholder:text-[var(--text-muted)]
-          "
+          onChange={alterarConteudo}
+          onSelectionChange={
+            alterarEstadoSelecao
+          }
         />
       </div>
-
-      {/* ======================================================
-          AÇÕES
-      ====================================================== */}
 
       <div className="mt-2 flex items-center gap-3">
         <button
